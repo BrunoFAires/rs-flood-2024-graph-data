@@ -1,5 +1,11 @@
 deeplearning/
 venv/
+.venv/
 .env/
+
+# Python
+__pycache__/
+*.py[cod]
+.python-version
 
 plot_estacoes.py

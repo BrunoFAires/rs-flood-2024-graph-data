@@ -98,6 +98,12 @@ uv run python render_satellite.py
 
 # 5. (Opcional) Mapa de calor da cobertura/máscara do dataset
 uv run python render_mask.py
+
+# 6. Alinhar tensor (X, M) e grafo (A, W) num único arquivo
+#    (interseção das estações presentes nos dois artefatos, mesma ordem de nós)
+uv run python adjust_data_order.py \
+    --tensor dataset_historico.npz --grafo grafo_hydrorivers.npz \
+    --saida dataset_stgnn.npz
 ```
 
 | Script | Papel | Principais saídas |
@@ -107,6 +113,7 @@ uv run python render_mask.py
 | `build_graph.py` | grafo dirigido de fluxo (pyshp) | `grafo_hydrorivers.npz`, `fluxo_arestas.geojson` |
 | `render_graph.py` / `render_satellite.py` | figuras do grafo (matplotlib) | `grafo_guaiba*.png` |
 | `render_mask.py` | mapa de calor da cobertura (máscara `M`) | `cobertura_mascara.png` |
+| `adjust_data_order.py` | alinha estações de `X`/`M` e `A`/`W` (interseção + reordenação) | `dataset_stgnn.npz` (`X`, `M`, `A`, `W`, `estacoes`, ...) |
 
 ### Detalhe: como o `preprocessar.py` monta o tensor
 

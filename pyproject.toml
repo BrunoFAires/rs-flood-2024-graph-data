@@ -3,5 +3,8 @@ name = "rs-flood-2024-graph-data"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "matplotlib>=3.10.9",
+    "numpy>=2.2.6",
+    "pyshp>=3.0.12",
     "requests>=2.34.2",
 ]

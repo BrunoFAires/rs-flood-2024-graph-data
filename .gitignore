@@ -8,4 +8,22 @@ __pycache__/
 *.py[cod]
 .python-version
 
+# Bulk downloaded data (can be regenerated via baixar_historico.py)
+dados_historicos/
+download_historico.log
+preprocess_historico.log
+
+# Generated STGNN tensors (regenerated via preprocessar.py)
+*.npz
+
+# Generated visualizations (regenerated via render_*.py / build_graph.py)
+grafo_guaiba.png
+grafo_guaiba_satelite.png
+cobertura_mascara.png
+fluxo_arestas.geojson
+
+# Geo env + downloaded river network (regenerable)
+.venv-geo/
+hydrorivers/
+
 plot_estacoes.py

@@ -15,7 +15,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import Counter
 
 
 def main():
@@ -24,15 +23,20 @@ def main():
     ap.add_argument("--geojson", default="fluxo_arestas.geojson")
     ap.add_argument("--saida", default="grafo_guaiba.png")
     ap.add_argument("--main-riv", type=int, default=None,
-                    help="Sistema a plotar; padrão = o maior (Guaíba/Patos).")
+                    help="Sistema MAIN_RIV a plotar; padrão = todas as estações do grafo.")
+    ap.add_argument("--estacao-final", default="87450004",
+                    help="Código da estação a destacar como exutório.")
     args = ap.parse_args()
 
     d = np.load(args.npz, allow_pickle=False)
     cod = d["nodes"]; lat = d["lat"]; lon = d["lon"]
     mr = d["main_riv"]; dist_foz = d["dist_foz_km"]; upland = d["upland_skm"]
+    A = d["A"]
 
-    alvo = args.main_riv or Counter(mr.tolist()).most_common(1)[0][0]
-    sel = mr == alvo
+    if args.main_riv:
+        sel = mr == args.main_riv
+    else:
+        sel = np.ones(len(cod), dtype=bool)
     idx = {c: i for i, c in enumerate(cod)}
     in_sys = set(cod[sel].tolist())
     n_sys = int(sel.sum())
@@ -62,20 +66,26 @@ def main():
     cbar = fig.colorbar(sc, ax=ax, shrink=0.6)
     cbar.set_label("Distância à foz (km) — escuro = mais a jusante")
 
-    # destaca o exutório (menor distância à foz)
+    # destaca o exutório
     sub = np.where(sel)[0]
-    foz = sub[np.argmin(dist_foz[sub])]
+    alvo = np.where(cod == args.estacao_final)[0]
+    if len(alvo) and alvo[0] in set(sub.tolist()):
+        foz = alvo[0]
+    else:
+        sem_jusante = np.where(A.sum(axis=1) == 0)[0]
+        candidatos = [i for i in sem_jusante if i in set(sub.tolist())]
+        foz = candidatos[0] if candidatos else sub[np.argmin(dist_foz[sub])]
     ax.scatter(lon[foz], lat[foz], marker="*", s=320, color="red",
                edgecolor="k", zorder=4, label="Exutório (Guaíba/Patos)")
 
     ax.set_title(f"Rede de fluxo Guaíba/Patos — {n_sys} estações, {n_edges} arestas\n"
-                 f"(STGNN, via HydroRIVERS; MAIN_RIV={alvo})")
+                 f"(STGNN, via HydroRIVERS)")
     ax.set_xlabel("Longitude"); ax.set_ylabel("Latitude")
     ax.legend(loc="lower left"); ax.grid(alpha=0.2)
     ax.set_aspect(1.0 / np.cos(np.radians(-30)))
     fig.tight_layout()
     fig.savefig(args.saida, dpi=150)
-    print(f"Salvo: {args.saida}  ({n_sys} nós, {n_edges} arestas no sistema {alvo})")
+    print(f"Salvo: {args.saida}  ({n_sys} nós, {n_edges} arestas)")
 
 
 if __name__ == "__main__":

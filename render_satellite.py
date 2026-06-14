@@ -13,7 +13,6 @@ import json
 import ssl
 import urllib.parse
 import urllib.request
-from collections import Counter
 
 import matplotlib
 matplotlib.use("Agg")
@@ -45,21 +44,26 @@ def main():
     ap.add_argument("--geojson", default="fluxo_arestas.geojson")
     ap.add_argument("--saida", default="grafo_guaiba_satelite.png")
     ap.add_argument("--main-riv", type=int, default=None)
+    ap.add_argument("--estacao-final", default="87450004",
+                    help="Código da estação a destacar como exutório (estrela).")
     ap.add_argument("--margem", type=float, default=0.25, help="Margem em graus ao redor dos nós.")
     args = ap.parse_args()
 
     d = np.load(args.npz, allow_pickle=False)
     cod = d["nodes"]; lat = d["lat"]; lon = d["lon"]
     mr = d["main_riv"]; dist_foz = d["dist_foz_km"]
+    A = d["A"]
 
-    alvo = args.main_riv or Counter(mr.tolist()).most_common(1)[0][0]
-    sel = mr == alvo
+    if args.main_riv:
+        sel = mr == args.main_riv
+    else:
+        sel = np.ones(len(cod), dtype=bool)
     in_sys = set(cod[sel].tolist())
 
     m = args.margem
     xmin, xmax = lon[sel].min() - m, lon[sel].max() + m
     ymin, ymax = lat[sel].min() - m, lat[sel].max() + m
-    print(f"Sistema {alvo}: {int(sel.sum())} nós | bbox "
+    print(f"Selecionadas {int(sel.sum())} estações | bbox "
           f"[{xmin:.2f},{ymin:.2f},{xmax:.2f},{ymax:.2f}]")
     print("Baixando imagem de satélite (Esri World Imagery)...")
     img = baixar_satelite(xmin, ymin, xmax, ymax)
@@ -75,7 +79,8 @@ def main():
         if p["montante"] in in_sys and p["jusante"] in in_sys:
             xs = [c[0] for c in ft["geometry"]["coordinates"]]
             ys = [c[1] for c in ft["geometry"]["coordinates"]]
-            ax.plot(xs, ys, color="#33ccff", lw=1.1, alpha=0.85, zorder=2)
+            cor = "#ff9900" if p.get("fallback") else "#33ccff"
+            ax.plot(xs, ys, color=cor, lw=1.1, alpha=0.85, zorder=2)
             n_edges += 1
 
     # nós coloridos por distância à foz
@@ -85,7 +90,13 @@ def main():
     cbar.set_label("Distância à foz (km)")
 
     sub = np.where(sel)[0]
-    foz = sub[np.argmin(dist_foz[sub])]
+    alvo = np.where(cod == args.estacao_final)[0]
+    if len(alvo) and alvo[0] in set(sub.tolist()):
+        foz = alvo[0]
+    else:
+        sem_jusante = np.where(A.sum(axis=1) == 0)[0]
+        candidatos = [i for i in sem_jusante if i in set(sub.tolist())]
+        foz = candidatos[0] if candidatos else sub[np.argmin(dist_foz[sub])]
     ax.scatter(lon[foz], lat[foz], marker="*", s=420, color="red",
                edgecolor="white", linewidth=0.8, zorder=4, label="Exutório (Guaíba)")
 

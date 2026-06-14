@@ -74,6 +74,14 @@ uv run python ana_data.py \
   estação, com registros horários de vazão, nível e chuva. Estações sem dados no
   período retornam um XML com a mensagem *"Sem dados para esta estação"*.
 
+### Estação artificial (Lago Guaíba → Lagoa dos Patos)
+
+Quando `--uf RS`, o `ana_data.py` adiciona automaticamente ao CSV de saída uma
+estação artificial **"Estação Lagoa dos Patos 1"** (`cod_estacao=90000001`,
+`bacia=8`, sem dados reais — `origem=VENTO`). Ela não existe na ANA: representa
+a saída do Lago Guaíba para a Lagoa dos Patos e é usada pelo `build_graph.py`
+como destino de um fallback "artificial" no grafo (ver abaixo).
+
 ## Pipeline do dataset STGNN
 
 Os scripts abaixo transformam os XMLs da ANA no dataset para a STGNN (nós =
@@ -114,6 +122,32 @@ uv run python adjust_data_order.py \
 | `render_graph.py` / `render_satellite.py` | figuras do grafo (matplotlib) | `grafo_guaiba*.png` |
 | `render_mask.py` | mapa de calor da cobertura (máscara `M`) | `cobertura_mascara.png` |
 | `adjust_data_order.py` | alinha estações de `X`/`M` e `A`/`W` (interseção + reordenação) | `dataset_stgnn.npz` (`X`, `M`, `A`, `W`, `estacoes`, ...) |
+
+### Detalhe: exutório e fallback do Lago Guaíba (`build_graph.py`)
+
+O grafo usa **`87450004` (CAIS MAUÁ C6, Rio Guaíba)** como exutório
+(`--estacao-final`). Após montar as arestas via `NEXT_DOWN` do HydroRIVERS, o
+grafo é filtrado para manter somente as estações conectadas (direta ou
+indiretamente) a essa estação (`filtrar_componente_final`).
+
+O HydroRIVERS não modela o Lago Guaíba como um corpo d'água conectado: rios que
+desembocam no lago terminam sem `NEXT_DOWN`. Para contornar isso:
+
+- `--lagoas` (padrão `lagoa_guaiba.geojson`) é o polígono do Lago Guaíba (OSM,
+  baixado automaticamente via Overpass se o arquivo não existir. Estações cujo trecho final do rio cai a até
+  `--limiar-lagoa-km` (padrão 5 km) do polígono recebem uma aresta de
+  *fallback* até `87450004`.
+- `EXCLUIR_FALLBACK` (`87242000`, `87450020`, `87460120`, `87480000`): estações
+  dentro/perto do lago que **não** recebem esse fallback — apenas `87450004` e
+  a estação de saída para a Lagoa dos Patos (`90000001`) representam o lago no
+  grafo. Estações que ficam sem nenhuma ligação após essa exclusão são
+  removidas pelo filtro de componente conexa.
+- `FORCAR_FALLBACK` (`90000001`, a "Estação Lagoa dos Patos 1" — ver seção
+  acima): recebe uma aresta `87450004 → 90000001`, sentido oposto ao fallback
+  normal, pois representa a saída do Guaíba para a Lagoa dos Patos, desenhada
+  como linha reta direta no GeoJSON, ignorando o limite normal de distância
+  (`--limiar-conector-km`, padrão 40 km) usado para os demais conectores de
+  fallback.
 
 ### Detalhe: como o `preprocessar.py` monta o tensor
 

@@ -27,3 +27,8 @@ fluxo_arestas.geojson
 hydrorivers/
 
 plot_estacoes.py
+
+dados_vento/
+
+.*.png
+.*.html

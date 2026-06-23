@@ -39,7 +39,7 @@ RS_BBOX = (-58.5, -34.6, -49.0, -26.5)  # xmin, ymin, xmax, ymax
 # Estações dentro/próximas do polígono do Lago Guaíba que não devem receber fallback
 # (87450004) e a estação na saída do Guaíba para a Lagoa dos Patos (90000001)
 # representam o lago no grafo.
-EXCLUIR_FALLBACK = {"87242000", "87450020", "87460120", "87480000"}
+EXCLUIR_FALLBACK = {"87450004", "87450020", "87460120", "87480000"}
 
 # Estação que representa a saída do Guaíba para a Lagoa dos Patos
 FORCAR_FALLBACK = {"90000001"}
@@ -329,7 +329,7 @@ def main():
     ap.add_argument("--shp", default=None, help="HydroRIVERS .shp (auto-detecta se vazio).")
     ap.add_argument("--saida-npz", default="grafo_hydrorivers.npz")
     ap.add_argument("--saida-geojson", default="fluxo_arestas.geojson")
-    ap.add_argument("--estacao-final", default="87450004",
+    ap.add_argument("--estacao-final", default="87242000",
                     help="Código da estação considerada exutório do grafo.")
     ap.add_argument("--lagoas", default="lagoa_guaiba.geojson",
                     help="GeoJSON com os polígonos do Lago Guaíba/Lagoa dos Patos.")

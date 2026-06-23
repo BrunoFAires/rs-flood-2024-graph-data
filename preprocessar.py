@@ -34,6 +34,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
+import re
 
 import numpy as np
 
@@ -94,7 +95,8 @@ def ler_xml(path):
 
 def ler_vento(path):
     """Extrai (cod_estacao, datahora_hora, {"vento_vel", "vento_dir"}) de um JSON do Open-Meteo."""
-    cod = Path(path).stem.removeprefix("vento_")
+    stem = Path(path).stem.removeprefix("vento_")
+    cod = re.sub(r"_\d{4}$", "", stem)
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):

@@ -97,6 +97,10 @@ def main():
                          "não são informados.")
     ap.add_argument("--data-inicio", default=None, help="Data inicial (YYYY-MM-DD).")
     ap.add_argument("--data-fim", default=None, help="Data final (YYYY-MM-DD).")
+    ap.add_argument("--ano", default=None,
+                    help="Atalho para --data-inicio YYYY-01-01 --data-fim YYYY-12-31 e "
+                         "salva como <prefixo>_<cod>_<ano>.json (não sobrescreve arquivos "
+                         "sem sufixo de ano já existentes).")
     ap.add_argument("--pausa", type=float, default=0.5, help="Pausa (s) entre requisições.")
     ap.add_argument("--dry-run", action="store_true", help="Lista o que seria baixado, sem acessar a rede.")
     args = ap.parse_args()
@@ -104,13 +108,19 @@ def main():
     aumento = AUMENTOS[args.aumento]
     variaveis, prefixo = aumento["variaveis"], aumento["prefixo"]
 
+    sufixo_ano = ""
+    if args.ano:
+        sufixo_ano = f"_{args.ano}"
+        args.data_inicio = args.data_inicio or f"{args.ano}-01-01"
+        args.data_fim    = args.data_fim    or f"{args.ano}-12-31"
+
     data_inicio, data_fim = args.data_inicio, args.data_fim
     if not data_inicio or not data_fim:
         di, df = periodo_dados_historicos(args.dados_historicos)
         if not di:
             raise SystemExit(
                 f"Não há XMLs em {args.dados_historicos!r} para inferir o período. "
-                "Informe --data-inicio/--data-fim explicitamente."
+                "Informe --data-inicio/--data-fim ou --ano explicitamente."
             )
         data_inicio, data_fim = data_inicio or di, data_fim or df
     args.data_inicio, args.data_fim = data_inicio, data_fim
@@ -119,14 +129,14 @@ def main():
     saida = Path(args.saida or aumento["saida"])
     saida.mkdir(parents=True, exist_ok=True)
 
+    nome_arquivo = f"{prefixo}_<cod>{sufixo_ano}.json"
     print(f"Aumento: {args.aumento} (variáveis: {', '.join(variaveis)})")
-    print(f"Estações: {len(estacoes)}  |  Período (de {args.dados_historicos}): "
-          f"{args.data_inicio}..{args.data_fim}")
-    print(f"Saída: {saida}/{prefixo}_<cod>.json\n")
+    print(f"Estações: {len(estacoes)}  |  Período: {args.data_inicio}..{args.data_fim}")
+    print(f"Saída: {saida}/{nome_arquivo}\n")
 
     baixados = pulados = erros = 0
     for i, e in enumerate(estacoes, start=1):
-        destino = saida / f"{prefixo}_{e['cod']}.json"
+        destino = saida / f"{prefixo}_{e['cod']}{sufixo_ano}.json"
         rotulo = f"[{i}/{len(estacoes)}] {e['cod']}"
 
         if destino.exists():

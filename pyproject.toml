@@ -10,4 +10,6 @@ dependencies = [
     "pyshp>=3.0.12",
     "requests>=2.34.2",
     "shapely>=2.1.2",
+    "torch>=2.3.0",
+    "tqdm>=4.66.0",
 ]

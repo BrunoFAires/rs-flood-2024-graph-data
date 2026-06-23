@@ -32,3 +32,9 @@ dados_vento/
 
 .*.png
 .*.html
+test_model.py
+run_train.py
+plot_forecast.py
+*.png
+checkpoints
+stgnn

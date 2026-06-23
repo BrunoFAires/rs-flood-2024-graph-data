@@ -24,7 +24,7 @@ def main():
     ap.add_argument("--saida", default="grafo_guaiba.png")
     ap.add_argument("--main-riv", type=int, default=None,
                     help="Sistema MAIN_RIV a plotar; padrão = todas as estações do grafo.")
-    ap.add_argument("--estacao-final", default="87450004",
+    ap.add_argument("--estacao-final", default="87242000",
                     help="Código da estação a destacar como exutório.")
     args = ap.parse_args()
 
@@ -78,8 +78,7 @@ def main():
     ax.scatter(lon[foz], lat[foz], marker="*", s=320, color="red",
                edgecolor="k", zorder=4, label="Exutório (Guaíba/Patos)")
 
-    ax.set_title(f"Rede de fluxo Guaíba/Patos — {n_sys} estações, {n_edges} arestas\n"
-                 f"(STGNN, via HydroRIVERS)")
+    ax.set_title(f"Rede de fluxo Guaíba/Patos — {n_sys} estações, {n_edges} arestas")
     ax.set_xlabel("Longitude"); ax.set_ylabel("Latitude")
     ax.legend(loc="lower left"); ax.grid(alpha=0.2)
     ax.set_aspect(1.0 / np.cos(np.radians(-30)))

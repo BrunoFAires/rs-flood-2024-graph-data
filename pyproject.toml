@@ -3,8 +3,13 @@ name = "rs-flood-2024-graph-data"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
+    "folium>=0.20.0",
     "matplotlib>=3.10.9",
+    "networkx>=3.4.2",
     "numpy>=2.2.6",
     "pyshp>=3.0.12",
     "requests>=2.34.2",
+    "shapely>=2.1.2",
+    "torch>=2.3.0",
+    "tqdm>=4.66.0",
 ]

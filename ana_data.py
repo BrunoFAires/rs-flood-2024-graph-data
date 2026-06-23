@@ -10,6 +10,26 @@ import requests
 
 ANA_ENDPOINT = "https://telemetriaws1.ana.gov.br/ServiceANA.asmx/DadosHidrometeorologicos"
 
+# Estação artificial
+ESTACAO_ARTIFICIAL_LAGOA_PATOS = {
+    "nome_estacao": "Estação Lagoa dos Patos 1",
+    "cod_estacao": "90000001",
+    "bacia": "8",
+    "sub_bacia": None,
+    "operadora": None,
+    "responsavel": None,
+    "municipio_uf": None,
+    "municipio": None,
+    "uf": "RS",
+    "latitude": "-30.35616464996018",
+    "longitude": "-51.077591247839045",
+    "altitude": "0.00",
+    "cod_rio": None,
+    "nome_rio": None,
+    "origem": "VENTO",
+    "status_estacao": "Ativo",
+}
+
 
 def get_text(parent: ET.Element, tag_name: str) -> Optional[str]:
     """
@@ -216,6 +236,10 @@ def main():
 
     print(f"Total de estações no XML: {len(estacoes)}")
     print(f"Estações encontradas para {args.uf.upper()}: {len(estacoes_uf)}")
+
+    if args.uf.upper() == "RS":
+        estacoes_uf.append(dict(ESTACAO_ARTIFICIAL_LAGOA_PATOS))
+        print("Adicionada estação artificial: Estação Lagoa dos Patos 1 (90000001)")
 
     salvar_estacoes_csv(estacoes_uf, args.saida_estacoes)
 

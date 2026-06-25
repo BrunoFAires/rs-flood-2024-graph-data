@@ -30,6 +30,16 @@ plot_estacoes.py
 
 dados_vento/
 
+# ANA HidroWebService credentials (NEVER commit) + raw downloads (regenerable)
+ana_credentials.json
+dados_hidroweb/
+
+# Bulk BHO hydrography download (357 MB, regenerable via baixar_bho.py)
+bho/
+
+# macOS cruft
+.DS_Store
+
 .*.png
 .*.html
 test_model.py

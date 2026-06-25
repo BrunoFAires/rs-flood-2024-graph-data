@@ -26,6 +26,8 @@ def main():
                     help="Sistema MAIN_RIV a plotar; padrão = todas as estações do grafo.")
     ap.add_argument("--estacao-final", default="87242000",
                     help="Código da estação a destacar como exutório.")
+    ap.add_argument("--fonte", default="HydroRIVERS",
+                    help="Rótulo da fonte hidrográfica exibido no título.")
     args = ap.parse_args()
 
     d = np.load(args.npz, allow_pickle=False)
@@ -64,7 +66,7 @@ def main():
                     s=12 + 8 * np.log1p(upland[sel]), edgecolor="k",
                     linewidth=0.3, zorder=3)
     cbar = fig.colorbar(sc, ax=ax, shrink=0.6)
-    cbar.set_label("Distância à foz (km) — escuro = mais a jusante")
+    cbar.set_label("Distance to outlet (km) — dark = further downstream")
 
     # destaca o exutório
     sub = np.where(sel)[0]
@@ -75,10 +77,11 @@ def main():
         sem_jusante = np.where(A.sum(axis=1) == 0)[0]
         candidatos = [i for i in sem_jusante if i in set(sub.tolist())]
         foz = candidatos[0] if candidatos else sub[np.argmin(dist_foz[sub])]
-    ax.scatter(lon[foz], lat[foz], marker="*", s=320, color="red",
-               edgecolor="k", zorder=4, label="Exutório (Guaíba/Patos)")
+    ax.scatter(lon[foz], lat[foz], marker="v", s=120, color="red",
+               edgecolor="k", zorder=4, label="Outlet (Guaíba/Patos)")
 
-    ax.set_title(f"Rede de fluxo Guaíba/Patos — {n_sys} estações, {n_edges} arestas")
+    ax.set_title(f"Rede de fluxo Guaíba/Patos — {n_sys} estações, {n_edges} arestas\n"
+                 f"(STGNN, via {args.fonte})")
     ax.set_xlabel("Longitude"); ax.set_ylabel("Latitude")
     ax.legend(loc="lower left"); ax.grid(alpha=0.2)
     ax.set_aspect(1.0 / np.cos(np.radians(-30)))
